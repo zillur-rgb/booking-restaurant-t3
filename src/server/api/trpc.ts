@@ -1,3 +1,5 @@
+import { verifyAuth } from "./../../lib/auth";
+import { TRPCError } from "@trpc/server";
 /**
  * YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:
  * 1. You want to modify request context (see Part 1).
@@ -48,6 +50,30 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
   },
 });
 
+const isAdmin = t.middleware(async ({ ctx, next }) => {
+  const { req } = ctx;
+  const token = req.cookies["user-token"];
+
+  if (!token) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "missing user token",
+    });
+  }
+
+  const verifiedToken = await verifyAuth(token);
+
+  if (!verifiedToken) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "token is expired",
+    });
+  }
+
+  // User is authenticated as admin
+  return next();
+});
+
 /**
  * 3. ROUTER & PROCEDURE (THE IMPORTANT BIT)
  *
@@ -69,4 +95,6 @@ export const createTRPCRouter = t.router;
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
+
+export const adminProcedure = t.procedure.use(isAdmin);
 export const publicProcedure = t.procedure;

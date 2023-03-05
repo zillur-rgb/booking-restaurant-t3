@@ -1,3 +1,4 @@
+import { adminProcedure } from "./../trpc";
 import cookie from "cookie";
 import { getJwtSecretKey } from "./../../../lib/auth";
 import { SignJWT } from "jose";
@@ -41,4 +42,8 @@ export const adminRouter = createTRPCRouter({
         message: "Invalid email or password",
       });
     }),
+
+  sensitiveInfo: adminProcedure.mutation(() => {
+    console.log("Highly sensitive");
+  }),
 });
