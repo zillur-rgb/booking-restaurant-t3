@@ -1,6 +1,6 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import Calendar from "../components/calendar/index";
+import Calendar from "../components/calendar/Calendar";
 
 import { api } from "~/utils/api";
 
