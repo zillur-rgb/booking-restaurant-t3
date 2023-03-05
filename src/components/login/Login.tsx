@@ -1,9 +1,12 @@
 import Image from "next/image";
-import { ChangeEvent, useState } from "react";
+import { type ChangeEvent, useState } from "react";
+import { api } from "../../utils/api";
 import { HiLockClosed } from "react-icons/hi";
 import login from "~/pages/login";
+import { useRouter } from "next/router";
 
 const Login = () => {
+  const router = useRouter();
   const [input, setInput] = useState({
     email: "",
     password: "",
@@ -13,6 +16,12 @@ const Login = () => {
     const { name, value } = e.target;
     setInput((prevState) => ({ ...prevState, [name]: value }));
   };
+
+  const { mutate: login, isError } = api.admin.login.useMutation({
+    onSuccess: () => {
+      void router.push("/dashboard");
+    },
+  });
   return (
     <div className="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
@@ -21,6 +30,8 @@ const Login = () => {
             className="mx-auto h-12 w-auto"
             src="https://tailwindui.com/img/logos/workflow-mark-indigo-600.svg"
             alt="Workflow"
+            width={200}
+            height={500}
           />
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
             Sign in to your account
@@ -39,7 +50,7 @@ const Login = () => {
           <input type="hidden" name="remember" defaultValue="true" />
           <div className="-space-y-px rounded-md shadow-sm">
             <p className="pb-1 text-sm text-red-600">
-              {error && "Invalid login credentials"}
+              {isError && "Invalid login credentials"}
             </p>
             <div>
               <label htmlFor="email-address" className="sr-only">
