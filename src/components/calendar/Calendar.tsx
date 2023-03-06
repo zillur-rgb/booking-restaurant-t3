@@ -1,25 +1,19 @@
 import { add, format } from "date-fns";
-import { useState } from "react";
+import { type Dispatch, type SetStateAction } from "react";
 import ReactCalenadar from "react-calendar";
 import {
   BOOKING_INTERVAL,
   CLOSING_HOURS,
   OPENING_HOURS,
 } from "~/constants/config";
+import { type DateType } from "~/utils/types";
 
-interface DateType {
-  justDate: Date | null;
-  dateTime: Date | null;
+interface indexProps {
+  date: DateType;
+  setDate: Dispatch<SetStateAction<DateType>>;
 }
-const Calendar = ({}) => {
-  const [date, setDate] = useState<DateType>({
-    justDate: null,
-    dateTime: null,
-  });
 
-  console.log("justDate: ", date.justDate);
-  console.log("dateTime: ", date.dateTime);
-
+const Calendar = ({ date, setDate }: indexProps) => {
   const getTimes = () => {
     if (!date.justDate) return;
 

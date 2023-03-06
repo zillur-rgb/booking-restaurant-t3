@@ -1,11 +1,22 @@
+"use client";
+
 import { type NextPage } from "next";
 import Head from "next/head";
 import Calendar from "../components/calendar/Calendar";
 
 import { api } from "~/utils/api";
+import { useState } from "react";
+import { type DateType } from "~/utils/types";
+import Menu from "~/components/Menu";
+import Spinner from "~/components/Spinner";
 
 const Home: NextPage = () => {
   const hello = api.example.hello.useQuery({ text: "from tRPC" });
+
+  const [date, setDate] = useState<DateType>({
+    justDate: null,
+    dateTime: null,
+  });
 
   return (
     <>
@@ -15,7 +26,14 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <Calendar />
+        {!date.dateTime && <Calendar date={date} setDate={setDate} />}
+        {date.dateTime && false ? (
+          <Menu />
+        ) : (
+          <div className="flex h-screen items-center justify-center">
+            <Spinner />
+          </div>
+        )}
       </main>
     </>
   );
