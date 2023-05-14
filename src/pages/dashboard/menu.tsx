@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { MultiValue } from "react-select/dist/declarations/src";
 import { selectOptions } from "~/utils/helpers";
 interface MenuProps {
@@ -20,6 +21,19 @@ const menu = () => {
     categories: [],
     file: undefined,
   });
+
+  // Selecting the preview image URL
+  const [preview, setPreview] = useState<string>("");
+
+  useEffect(() => {
+    // create the preview
+    if (!input.file) return;
+    const objectUrl = URL.createObjectURL(input.file);
+    setPreview(objectUrl);
+
+    // Clean up the preview
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [input.file]);
   return (
     <>
       <div>
@@ -44,7 +58,7 @@ const menu = () => {
             }
             value={input.price}
           />
-
+          {/* Selection of the menu  */}
           <DynamicSelect
             value={input.categories}
             onChange={(e: any) =>
@@ -54,6 +68,27 @@ const menu = () => {
             className="h-12"
             options={selectOptions}
           />
+
+          <label
+            htmlFor="file"
+            className="relative h-12 cursor-pointer rounded-sm bg-gray-200 font-medium text-indigo-600 focus-within:outline-none"
+          >
+            <span className="sr-only">File input</span>
+            <div className="flex h-full items-center justify-center">
+              {preview ? (
+                <div className="relative h-3/4 w-full">
+                  <Image
+                    alt="preview"
+                    style={{ objectFit: "contain" }}
+                    fill
+                    src={preview}
+                  />
+                </div>
+              ) : (
+                <span>Select image</span>
+              )}
+            </div>
+          </label>
         </div>
       </div>
     </>
