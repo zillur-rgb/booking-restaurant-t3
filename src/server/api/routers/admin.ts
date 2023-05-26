@@ -80,4 +80,53 @@ export const adminRouter = createTRPCRouter({
 
       return { url, fields, key };
     }),
+  // New menu add
+  addMenuItem: adminProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        price: z.number(),
+        imageKey: z.string(),
+        categories: z.array(
+          z.union([
+            z.literal("Breakfast"),
+            z.literal("Lunch"),
+            z.literal("Dinner"),
+          ])
+        ),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { name, price, imageKey, categories } = input;
+
+      const menuItem = await ctx.prisma.menuItem.create({
+        data: {
+          name,
+          price,
+          categories,
+          imageKey,
+        },
+      });
+
+      return menuItem;
+    }),
+
+  deleteMenuItem: adminProcedure
+    .input(z.object({ imageKey: z.string(), id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { imageKey, id } = input;
+      // Delete image from aws s3
+      await s3
+        .deleteObject({
+          Bucket: "booking-restaurant.t3",
+          Key: imageKey,
+        })
+        .promise();
+
+      // Delete image from the database
+      await ctx.prisma.menuItem.delete({
+        where: { id },
+      });
+      return true;
+    }),
 });
