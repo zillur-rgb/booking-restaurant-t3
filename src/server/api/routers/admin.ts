@@ -6,6 +6,8 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
+import { s3 } from "~/lib/s3";
+import { MAX_IMAGE_SIZE } from "~/constants/config";
 
 export const adminRouter = createTRPCRouter({
   login: publicProcedure
@@ -49,7 +51,33 @@ export const adminRouter = createTRPCRouter({
       });
     }),
 
-  sensitiveInfo: adminProcedure.mutation(() => {
-    console.log("Highly sensitive");
-  }),
+  createPresignedUrl: adminProcedure
+    .input(z.object({ fileType: z.string() }))
+    .mutation(async ({ input }) => {
+      const id = nanoid();
+      // For example: image/jpeg
+      const ex = input.fileType.split("/")[1];
+      const key = `${id}.${ex}`;
+
+      const { url, fields } = (await new Promise((resolve, reject) => {
+        s3.createPresignedPost(
+          {
+            Bucket: "booking-restaurant.t3",
+            Fields: { key },
+            Expires: 60,
+            Conditions: [
+              ["content-length-range", 0, MAX_IMAGE_SIZE],
+              ["starts-with", "$Content-Type", "image/"],
+            ],
+          },
+
+          (err, data) => {
+            if (err) return reject(err);
+            resolve(data);
+          }
+        );
+      })) as any as { url: string; fields: any };
+
+      return { url, fields, key };
+    }),
 });

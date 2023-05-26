@@ -1,7 +1,8 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { MultiValue } from "react-select/dist/declarations/src";
+import { MAX_IMAGE_SIZE } from "~/constants/config";
 import { selectOptions } from "~/utils/helpers";
 interface MenuProps {
   name: string;
@@ -25,6 +26,8 @@ const menu = () => {
   // Selecting the preview image URL
   const [preview, setPreview] = useState<string>("");
 
+  const [error, setError] = useState<string>("");
+
   useEffect(() => {
     // create the preview
     if (!input.file) return;
@@ -34,6 +37,14 @@ const menu = () => {
     // Clean up the preview
     return () => URL.revokeObjectURL(objectUrl);
   }, [input.file]);
+
+  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return setError("No files selected");
+    if (e.target.files[0].size > MAX_IMAGE_SIZE)
+      return setError("Maximum file size exceeded");
+
+    setInput((prev) => ({ ...prev, file: e.target.files![0] }));
+  };
   return (
     <>
       <div>
@@ -87,6 +98,15 @@ const menu = () => {
               ) : (
                 <span>Select image</span>
               )}
+
+              <input
+                name="file"
+                id="file"
+                onChange={handleFileSelect}
+                accept="image/jpeg image/png image/jpg"
+                type="file"
+                className="sr-only"
+              />
             </div>
           </label>
         </div>
